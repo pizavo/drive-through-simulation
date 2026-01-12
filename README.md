@@ -701,11 +701,12 @@ drive-through-simulation/
 
 ## Dependencies
 
-- **tokio** – Async runtime
-- **rand** – Random number generation
-- **serde** – Serialization/deserialization
-- **config** – Configuration management
-- **humantime** – Human-readable duration parsing
+- **[tokio](https://crates.io/crates/tokio)** `v1.x` – Asynchronous runtime for Rust, providing async/await support and task scheduling for concurrent simulation execution
+- **[rand](https://crates.io/crates/rand)** `v0.9.2` – Random number generation library used for generating exponential inter-arrival times and uniform service durations
+- **[serde](https://crates.io/crates/serde)** `v1.0` – Serialization/deserialization framework for configuration parsing and data structures
+- **[config](https://crates.io/crates/config)** `v0.15.19` – Configuration management library with YAML support for loading simulation parameters
+- **[humantime](https://crates.io/crates/humantime)** `v2.1` – Human-readable duration parsing and formatting (e.g., "1m 30s", "2h")
+- **[clap](https://crates.io/crates/clap)** `v4.5` – Command-line argument parser for handling `--config` and other CLI options
 
 ## Testing
 

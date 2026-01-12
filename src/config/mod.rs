@@ -7,6 +7,9 @@ use random::RandomSimConfig;
 use serde::Deserialize;
 use std::path::Path;
 
+// External config crate (avoid confusion with local config module)
+use config as config_crate;
+
 /// Main configuration structure for the simulation
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -19,9 +22,9 @@ impl Config {
     ///
     /// Also supports environment variable overrides with the prefix "APP__"
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
-        let settings = config::Config::builder()
-            .add_source(config::File::from(path.as_ref()))
-            .add_source(config::Environment::with_prefix("APP").separator("__"))
+        let settings = config_crate::Config::builder()
+            .add_source(config_crate::File::from(path.as_ref()))
+            .add_source(config_crate::Environment::with_prefix("APP").separator("__"))
             .build()?;
 
         let config: Self = settings.try_deserialize()?;
