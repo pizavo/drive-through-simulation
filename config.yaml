@@ -1,0 +1,17 @@
+fixed_simulation:
+  enabled: true
+  num_windows: 1
+  customers:
+    - { arrival: 0, service: "30s" }
+    - { arrival: "25s", service: 120 }
+    - { arrival: 50, service: "1min 2s" }
+  history_file: "history_fixed.csv"
+
+random_simulation:
+  enabled: true
+  num_windows: 3
+  avg_arrival_interval: 40
+  min_service_time: 10
+  max_service_time: "5min"
+  max_simulation_time: "1h"
+  history_file: "history_random.csv"
