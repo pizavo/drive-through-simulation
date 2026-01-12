@@ -844,6 +844,7 @@ Built using Rust's powerful async/await system and demonstrates practical applic
 - Production-grade testing and validation practices
 - Clean code architecture with separation of concerns
 
-AI has been used to assist in choosing and implementing statistical equations and automated tests
+AI has been used to assist in choosing and implementing statistical equations, automated tests, and this documentation
+regarding technical details (installation, performance, ...) and analysis (validations, equations, ...)
 – JetBrains Junie, GitHub Copilot with Claude Sonnet 4.5
 
