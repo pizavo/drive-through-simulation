@@ -130,3 +130,104 @@ impl Default for Statistics {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_statistics_new() {
+        let stats = Statistics::new();
+        assert_eq!(stats.total_wait_time, 0.0);
+        assert_eq!(stats.total_service_time, 0.0);
+        assert_eq!(stats.completed_customers, 0);
+        assert_eq!(stats.max_wait_time, 0.0);
+        assert_eq!(stats.max_queue_length, 0);
+    }
+
+    #[test]
+    fn test_record_completion() {
+        let mut stats = Statistics::new();
+
+        stats.record_completion(10.0, 20.0);
+        assert_eq!(stats.completed_customers, 1);
+        assert_eq!(stats.total_wait_time, 10.0);
+        assert_eq!(stats.total_service_time, 20.0);
+        assert_eq!(stats.max_wait_time, 10.0);
+
+        stats.record_completion(15.0, 25.0);
+        assert_eq!(stats.completed_customers, 2);
+        assert_eq!(stats.total_wait_time, 25.0);
+        assert_eq!(stats.total_service_time, 45.0);
+        assert_eq!(stats.max_wait_time, 15.0);
+    }
+
+    #[test]
+    fn test_update_integrals() {
+        let mut stats = Statistics::new();
+
+        // Scenario: queue starts with 2 customers, 1 server busy at t=0
+        // At t=10, state changes to 3 in queue, 2 servers busy
+        // At t=20, state changes to 1 in queue, 1 server busy
+
+        // Call update_integrals with the state that existed from t=0 to t=10
+        stats.update_integrals(10.0, 2, 1);
+        assert_eq!(stats.last_event_time, 10.0);
+        assert_eq!(stats.queue_length_integral, 20.0); // 2 customers * 10 seconds
+        assert_eq!(stats.server_busy_integral, 10.0);  // 1 server * 10 seconds
+
+        // Call update_integrals with the state that existed from t=10 to t=20
+        stats.update_integrals(20.0, 3, 2);
+        assert_eq!(stats.queue_length_integral, 50.0); // 20 + (3 * 10)
+        assert_eq!(stats.server_busy_integral, 30.0);  // 10 + (2 * 10)
+
+        // Call update_integrals with the state that existed from t=20 to t=30
+        stats.update_integrals(30.0, 1, 1);
+        assert_eq!(stats.queue_length_integral, 60.0); // 50 + (1 * 10)
+        assert_eq!(stats.server_busy_integral, 40.0);  // 30 + (1 * 10)
+    }
+
+    #[test]
+    fn test_update_max_queue() {
+        let mut stats = Statistics::new();
+
+        stats.update_max_queue(5);
+        assert_eq!(stats.max_queue_length, 5);
+
+        stats.update_max_queue(3);
+        assert_eq!(stats.max_queue_length, 5); // Should stay at max
+
+        stats.update_max_queue(10);
+        assert_eq!(stats.max_queue_length, 10); // New max
+    }
+
+    #[test]
+    fn test_averages() {
+        let mut stats = Statistics::new();
+
+        stats.record_completion(5.0, 15.0);
+        stats.record_completion(10.0, 20.0);
+        stats.record_completion(15.0, 25.0);
+
+        let avg_wait = stats.total_wait_time / stats.completed_customers as f64;
+        let avg_service = stats.total_service_time / stats.completed_customers as f64;
+
+        assert_eq!(avg_wait, 10.0); // (5 + 10 + 15) / 3
+        assert_eq!(avg_service, 20.0); // (15 + 20 + 25) / 3
+    }
+
+    #[test]
+    fn test_time_weighted_averages() {
+        let mut stats = Statistics::new();
+
+        // Simulate: 0 in queue for 10s, then 5 in queue for 20s
+        stats.update_integrals(10.0, 0, 0);
+        stats.update_integrals(30.0, 5, 1);
+
+        let total_time = 30.0;
+        let avg_queue = stats.queue_length_integral / total_time;
+
+        // Should be (0*10 + 5*20) / 30 = 100/30 = 3.33
+        assert!((avg_queue - 3.333).abs() < 0.01);
+    }
+}
+

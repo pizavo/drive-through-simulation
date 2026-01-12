@@ -120,6 +120,71 @@ impl Default for SimClock {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clock_starts_at_zero() {
+        let clock = SimClock::new();
+        assert_eq!(clock.now(), 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_clock_advance() {
+        let local = tokio::task::LocalSet::new();
+        
+        local.run_until(async {
+            let clock = Arc::new(SimClock::new());
+            let clock_clone = clock.clone();
+
+            // Spawn task that sleeps until time 10.0
+            tokio::task::spawn_local(async move {
+                clock_clone.sleep_until(10.0).await;
+            });
+
+            // Yield to allow task to register its waker
+            tokio::task::yield_now().await;
+
+            // Advance clock
+            assert!(clock.advance());
+            assert_eq!(clock.now(), 10.0);
+        }).await;
+    }
+
+    #[tokio::test]
+    async fn test_multiple_sleeps_ordered() {
+        let local = tokio::task::LocalSet::new();
+        
+        local.run_until(async {
+            let clock = Arc::new(SimClock::new());
+            let times = Arc::new(tokio::sync::Mutex::new(Vec::new()));
+            
+            // Spawn multiple tasks with different wake times
+            for wake_time in [30.0, 10.0, 20.0] {
+                let clock_clone = clock.clone();
+                let times_clone = times.clone();
+                tokio::task::spawn_local(async move {
+                    clock_clone.sleep_until(wake_time).await;
+                    times_clone.lock().await.push(wake_time);
+                });
+            }
+
+            // Yield to allow all tasks to register their wakers
+            tokio::task::yield_now().await;
+
+            // Advance through all events
+            while clock.advance() {
+                tokio::task::yield_now().await;
+            }
+            
+            let collected_times = times.lock().await;
+            // Times should be collected in order: 10, 20, 30
+            assert_eq!(*collected_times, vec![10.0, 20.0, 30.0]);
+        }).await;
+    }
+}
+
 struct SleepFuture {
     clock: Arc<Mutex<ClockInner>>,
     wake_time: f64,

@@ -18,6 +18,7 @@ fn parse_duration(s: &str) -> Result<f64, String> {
 ///
 /// # Examples
 /// ```
+/// use drive_through_simulation::duration::format_duration;
 /// assert_eq!(format_duration(0.0), "0s");
 /// assert_eq!(format_duration(90.0), "1m 30s");
 /// ```

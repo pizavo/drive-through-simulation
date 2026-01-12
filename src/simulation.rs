@@ -16,7 +16,7 @@ use tokio::sync::mpsc;
 /// customer arrivals, queueing, and service at multiple service windows.
 pub struct Simulation {
     clock: Arc<SimClock>,
-    state: Arc<Mutex<SimState>>,
+    pub state: Arc<Mutex<SimState>>,
 }
 
 impl Simulation {

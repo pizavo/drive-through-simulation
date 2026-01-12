@@ -13,5 +13,5 @@ random_simulation:
   avg_arrival_interval: 40
   min_service_time: 10
   max_service_time: "5min"
-  max_simulation_time: "1h"
+  max_simulation_time: "10h"
   history_file: "history_random.csv"
