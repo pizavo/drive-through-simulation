@@ -4,14 +4,12 @@ A discrete-event simulation of a drive-through service system implemented in Rus
 
 ---
 
-## 📋 Documentation Summary
+## Essentials Index
 
-This README addresses all required criteria:
-
-1. ✅ **[Problem Definition](#problem-definition)** – What we're modeling and why we chose this topic
-2. ✅ **[Model Description](#how-it-works)** – How the model works, key parameters, and mechanisms
-3. ✅ **[Data Usage](#data-usage)** – Types of data used (synthetic, random, real-world options)
-4. ✅ **[Example Outputs](#example-output)** – Experiments with interpretation and analysis
+1. **[Problem Definition](#problem-definition)** – What we're modeling and why we chose this topic
+2. **[Model Description](#how-it-works)** – How the model works, key parameters, and mechanisms
+3. **[Data Usage](#data-usage)** – Types of data used (synthetic, random, real-world options)
+4. **[Example Outputs](#example-output)** – Experiments with interpretation and analysis
 
 ---
 
@@ -34,14 +32,7 @@ This simulation allows us to:
 - **Test "what-if" scenarios** without disrupting real operations
 - **Optimize resource allocation** (number of service windows)
 - **Predict performance** under different customer arrival patterns
-- **Validate against queueing theory** (M/M/c, Little's Law)
 - **Understand system behavior** before implementation
-
-The choice of Rust with async/await provides a modern, efficient approach to discrete-event simulation while demonstrating practical applications of concurrent programming concepts.
-
-## Overview
-
-This simulation models customer arrivals, queueing, and service at a drive-through facility with multiple service windows. It uses coroutine-based scheduling to simulate concurrent customer processing and provides detailed statistics about wait times, queue lengths, and server utilization.
 
 ## Features
 
@@ -98,7 +89,7 @@ This is a **discrete-event simulation (DES)** of a queueing system with the foll
 ```
 Customer arrives → Checks for available server
     ↓                           ↓
-Server busy?              Server available
+Server busy?             Server available
     ↓                           ↓
 Join queue               Start service immediately
     ↓                           ↓

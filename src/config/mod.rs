@@ -27,8 +27,9 @@ impl Config {
             .add_source(config_crate::Environment::with_prefix("APP").separator("__"))
             .build()?;
 
-        let config: Self = settings.try_deserialize()?;
+        let mut config: Self = settings.try_deserialize()?;
         config.validate()?;
+        config.normalize()?;
         Ok(config)
     }
 
@@ -38,6 +39,20 @@ impl Config {
             return Err(
                 "At least one simulation (fixed or random) must be enabled in config.yaml".into(),
             );
+        }
+        Ok(())
+    }
+
+    /// Normalizes configuration data (e.g., sorts customers by arrival time)
+    fn normalize(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        // Sort fixed simulation customers by arrival time
+        // This is critical because the simulation processes them sequentially
+        if self.fixed_simulation.enabled {
+            self.fixed_simulation.customers.sort_by(|a, b| {
+                a.arrival
+                    .partial_cmp(&b.arrival)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
         }
         Ok(())
     }

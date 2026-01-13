@@ -66,6 +66,13 @@ impl Simulation {
     /// * `max_time` - Optional maximum simulation time. If None, runs until all customers are served.
     /// * `csv_filename` - Optional CSV filename for streaming event history
     pub async fn run(&mut self, max_time: Option<f64>, csv_filename: Option<&str>) {
+        // Sort customers by arrival time (critical for correct sequential processing)
+        self.state.lock().unwrap().customers.sort_by(|a, b| {
+            a.arrival_time
+                .partial_cmp(&b.arrival_time)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
         // Initialize CSV file if filename provided
         if let Some(filename) = csv_filename
             && let Err(e) = self.state.lock().unwrap().init_csv(filename)

@@ -344,3 +344,58 @@ async fn test_littles_law() {
     }
 }
 
+/// Test that customers added in non-chronological order are still processed correctly
+/// This verifies that the system can handle unsorted customer arrival times
+#[tokio::test]
+async fn test_unsorted_customers() {
+    let mut sim = Simulation::new(1);
+
+    // Add customers in REVERSE chronological order
+    sim.add_customer(100.0, 10.0);  // Will arrive last
+    sim.add_customer(50.0, 10.0);   // Will arrive second
+    sim.add_customer(0.0, 10.0);    // Will arrive first
+
+    sim.run(None, None).await;
+
+    let state = sim.state.lock().unwrap();
+
+    // All customers should have been served
+    assert_eq!(
+        state.stats.completed_customers, 3,
+        "All 3 customers should be completed"
+    );
+
+    // After sorting, customers are reordered by arrival time
+    // So state.customers[0] = arrival 0, [1] = arrival 50, [2] = arrival 100
+    assert_eq!(state.customers[0].arrival_time, 0.0);
+    assert_eq!(state.customers[1].arrival_time, 50.0);
+    assert_eq!(state.customers[2].arrival_time, 100.0);
+
+    // They should be served in arrival order
+    let start0 = state.customers[0].service_start_time.unwrap();
+    let start1 = state.customers[1].service_start_time.unwrap();
+    let start2 = state.customers[2].service_start_time.unwrap();
+
+    assert!(
+        start0 < start1,
+        "Customer with arrival=0 should start before customer with arrival=50"
+    );
+    assert!(
+        start1 < start2,
+        "Customer with arrival=50 should start before customer with arrival=100"
+    );
+
+    // Verify service starts at or after arrival
+    assert!(
+        start0 >= 0.0,
+        "First customer should start at or after arrival time 0"
+    );
+    assert!(
+        start1 >= 50.0,
+        "Second customer should start at or after arrival time 50"
+    );
+    assert!(
+        start2 >= 100.0,
+        "Third customer should start at or after arrival time 100"
+    );
+}
